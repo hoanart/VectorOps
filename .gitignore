@@ -75,3 +75,4 @@ DerivedDataCache/*
 
 Plugins/Developer/RiderLink/*
 *.idea/workspace.xml
+*.idea/*
