@@ -38,6 +38,8 @@ protected:
 	void UpdateMouseVector();
 	void SmoothStrafeVector();
 	void DebugLocationFace();
+	void GetDirectionAB(const FVector& A,const FVector& B, FVector& Dir,float& Length);
+	float GetStrafeDot(const float& SingleAngle);
 	FVector CursorHitLocation();
 protected:
 	//Components

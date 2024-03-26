@@ -183,13 +183,28 @@ void ASCharacter::DebugLocationFace()
 	}
 }
 
+void ASCharacter::GetDirectionAB(const FVector& A, const FVector& B, FVector& Dir, float& Length)
+{
+	FVector NewVec = FVector(B.X,B.Y,A.Z);
+	Length = (A-NewVec).Length();
+	FVector AB = (B-A);
+	AB.Normalize();
+	Dir = AB;
+}
+
+float ASCharacter::GetStrafeDot(const float& SingleAngle)
+{
+	return (90.0f-SingleAngle)/90.0f;
+}
+
+
 FVector ASCharacter::CursorHitLocation()
 {
 	FHitResult HitResult;
 	if(TObjectPtr<APlayerController> PlayerController = Cast<APlayerController>(Controller))
 	{
-		PlayerController->GetHitResultUnderCursorByChannel(ETraceTypeQuery::,true,HitResult);
+		PlayerController->GetHitResultUnderCursor(ECC_Visibility,true,HitResult);
 	}
-	
+	return HitResult.Location;
 }
 
