@@ -32,6 +32,13 @@ public:
 protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	void PrimaryAttack(const FInputActionValue& Value);
+
+protected:
+	void UpdateMouseVector();
+	void SmoothStrafeVector();
+	void DebugLocationFace();
+	FVector CursorHitLocation();
 protected:
 	//Components
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Components",meta = (AllowPrivateAccess = true))
@@ -50,8 +57,20 @@ private:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Input",meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> LookAction;
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Input",meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> FireAction;
 	
+private:
+	UPROPERTY(EditDefaultsOnly,Category="Animation")
+	TObjectPtr<class UAnimMontage> FireAnim;
 	
-	
-	
+	UPROPERTY(EditDefaultsOnly,Category="Bullet")
+	TSubclassOf<class ABulletBase> BulletClass;
+	FName MuzzleName;
+
+	FVector LastForward;
+	FVector StrafeVector;
+	FVector LerpStrafeVector;
+	UPROPERTY(EditDefaultsOnly,Category="Aim")
+	float StrafeLerpSpeed;
 };
