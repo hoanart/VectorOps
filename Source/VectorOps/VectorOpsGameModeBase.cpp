@@ -3,3 +3,7 @@
 
 #include "VectorOpsGameModeBase.h"
 
+void AVectorOpsGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+}

@@ -13,5 +13,6 @@ UCLASS()
 class VECTOROPS_API AVectorOpsGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+	virtual void BeginPlay() override;
 };

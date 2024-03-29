@@ -29,18 +29,17 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	FRotator LookupTarget(const FVector& Target);
 protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void PrimaryAttack(const FInputActionValue& Value);
 
 protected:
-	void UpdateMouseVector();
-	void SmoothStrafeVector();
 	void DebugLocationFace();
-	void GetDirectionAB(const FVector& A,const FVector& B, FVector& Dir,float& Length);
-	float GetStrafeDot(const float& SingleAngle);
 	FVector CursorHitLocation();
+	
 protected:
 	//Components
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Components",meta = (AllowPrivateAccess = true))
@@ -69,10 +68,6 @@ private:
 	UPROPERTY(EditDefaultsOnly,Category="Bullet")
 	TSubclassOf<class ABulletBase> BulletClass;
 	FName MuzzleName;
-
-	FVector LastForward;
-	FVector StrafeVector;
-	FVector LerpStrafeVector;
-	UPROPERTY(EditDefaultsOnly,Category="Aim")
-	float StrafeLerpSpeed;
+	
 };
+

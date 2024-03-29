@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "DrawDebugHelpers.h"
+#include "SPlayerController.h"
 #include "GenericPlatform/GenericPlatformCrashContext.h"
 // Sets default values
 ASCharacter::ASCharacter()
@@ -23,11 +24,13 @@ ASCharacter::ASCharacter()
 	CameraComp->SetupAttachment(SpringArmComp);
 	
 	MuzzleName = "Muzzle_01";
+	
 }
 
 void ASCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+	
 }
 
 
@@ -41,6 +44,7 @@ void ASCharacter::BeginPlay()
 		{
 			SubSystem->AddMappingContext(DefaultMappingContext,0);
 		}
+		PlayerController->SetShowMouseCursor(true);
 	}
 }
 
@@ -48,19 +52,9 @@ void ASCharacter::BeginPlay()
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UpdateMouseVector();
 	DebugLocationFace();
-	// //ToDo: 캐릭터가 바라보는 방향과 컨트롤러의 방향 디버그
-	// const float DrawScale = 1000.f;
-	// const float Thickness = 10.f;
-	// FVector LineStart  = GetActorLocation();
-	// LineStart += GetActorRightVector()*100.f;
-	//
-	// FVector ActorDirection_LineEnd = LineStart + (GetActorForwardVector()*100.f);
-	// DrawDebugDirectionalArrow(GetWorld(),LineStart,ActorDirection_LineEnd, DrawScale,FColor::Yellow,false,0.f,0,Thickness);
-	//
-	// FVector ControllerDirection_LineEnd = LineStart + (GetControlRotation().Vector()*200.f);
-	// DrawDebugDirectionalArrow(GetWorld(),LineStart,ControllerDirection_LineEnd,DrawScale,FColor::Green,false,0.f,0,Thickness);
+	
+	
 }
 
 // Called to bind functionality to input
@@ -70,17 +64,27 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	if(TObjectPtr<UEnhancedInputComponent> EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveAction,ETriggerEvent::Triggered,this,&ASCharacter::Move);
-		EnhancedInputComponent->BindAction(LookAction,ETriggerEvent::Triggered,this,&ASCharacter::Look);
 		EnhancedInputComponent->BindAction(FireAction,ETriggerEvent::Triggered,this,&ASCharacter::PrimaryAttack);
 	}
+}
+
+FRotator ASCharacter::LookupTarget(const FVector& Target)
+{
+	FVector TargetVec2D = FVector(Target.X,Target.Y,0.f);
+	FVector ActorVec2D = FVector(GetActorLocation().X,GetActorLocation().Y,0.f);
+	//ILookupMouseInterface::Lookup_Implementation();
+	FVector Dir = (TargetVec2D-ActorVec2D).GetSafeNormal();
+	
+	return FRotationMatrix::MakeFromX(Dir).Rotator();
 }
 
 void ASCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVec = Value.Get<FVector2D>();
+	
 	if(IsValid(Controller))
 	{
-		const FRotator Rot = Controller->GetControlRotation();
+		const FRotator Rot =GetActorRotation();
 		const FRotator YawRot = FRotator(0.f,Rot.Yaw,0.f);
 
 		const FVector ForwardDir = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
@@ -98,6 +102,7 @@ void ASCharacter::Look(const FInputActionValue& Value)
 	if(IsValid(Controller))
 	{
 		AddControllerYawInput(LookAxisVec.X);
+		AddControllerYawInput(LookAxisVec.Y);
 	}
 }
 
@@ -117,46 +122,12 @@ void ASCharacter::PrimaryAttack(const FInputActionValue& Value)
 	if(ensure(BulletClass))
 	{
 		DrawDebugSphere(GetWorld(),MuzzleLoc,5.f,10.f,FColor::Green,true);
-		GetWorld()->SpawnActor<AActor>(BulletClass,MuzzleLoc,MuzzleRot,SpawnParams);
+		GetWorld()->SpawnActor<AActor>(BulletClass,GetActorLocation(),GetActorRotation(),SpawnParams);
 	}
 	
 	
-}
-//캐릭터의 위와 정면 값으로 외적 구하기.
-void ASCharacter::UpdateMouseVector()
-{
-	LastForward = GetActorForwardVector();
-	
-
-	StrafeVector = FVector::CrossProduct(GetActorUpVector(),LastForward);
-	
-	const float DrawScale = 1000.f;
-	const float Thickness = 10.f;
-	FVector LineStart  = GetActorLocation();
-	LineStart += GetActorRightVector()*100.f;
-	
-	FVector ActorDirection_LineEnd = LineStart + (LastForward*100.f);
-	DrawDebugDirectionalArrow(GetWorld(),LineStart,ActorDirection_LineEnd, DrawScale,FColor::Red,false,0.f,0,Thickness);
-	FVector ActorUpDirection_LineEnd = LineStart+(GetActorUpVector()*100.f);
-	DrawDebugDirectionalArrow(GetWorld(),LineStart,ActorUpDirection_LineEnd, DrawScale,FColor::Blue,false,0.f,0,Thickness);
-	
-	FVector CrossVec_LineEnd = LineStart + (StrafeVector*100.f);
-	DrawDebugDirectionalArrow(GetWorld(),LineStart,CrossVec_LineEnd,DrawScale,FColor::Purple,false,0.f,0,Thickness);
 }
 
-void ASCharacter::SmoothStrafeVector()
-{
-	LerpStrafeVector *=-1.0f;
-	float SquaredLength = (StrafeVector + LerpStrafeVector).Length();
-	if(SquaredLength>1.0f)
-	{
-		LerpStrafeVector = FMath::Lerp(StrafeVector,LerpStrafeVector,GetWorld()->DeltaTimeSeconds*StrafeLerpSpeed);
-	}
-	else if(StrafeVector!=LerpStrafeVector)
-	{
-		StrafeVector = LerpStrafeVector;
-	}
-}
 
 void ASCharacter::DebugLocationFace()
 {
@@ -165,36 +136,12 @@ void ASCharacter::DebugLocationFace()
 	FCollisionParameters TraceParams;
 
 	FVector Loc = GetActorLocation();
-	
-	bHit = GetWorld()->LineTraceSingleByChannel(HitResult,Loc,Loc+ (StrafeVector*22222.0f), ECC_Visibility);
-	if(bHit)
-	{
-		DrawDebugLine(GetWorld(),Loc,Loc+ (StrafeVector*22222.0f),FColor::Green,false,5.f,0,1.f);
-	}
-	bHit = GetWorld()->LineTraceSingleByChannel(HitResult,Loc,Loc+(StrafeVector*-22222.0f),ECC_Visibility);
-	if(bHit)
-	{
-		DrawDebugLine(GetWorld(),Loc,Loc+ (StrafeVector*-22222.0f),FColor::Green,false,5.f,0,1.f);
-	}
+
 	bHit = GetWorld()->LineTraceSingleByChannel(HitResult,Loc,Loc+(GetActorForwardVector()*22222.0f),ECC_Visibility);
 	if(bHit)
 	{
 		DrawDebugLine(GetWorld(),Loc,Loc+(GetActorForwardVector()*22222.0f),FColor::Blue,false,5.f,0,1.f);
 	}
-}
-
-void ASCharacter::GetDirectionAB(const FVector& A, const FVector& B, FVector& Dir, float& Length)
-{
-	FVector NewVec = FVector(B.X,B.Y,A.Z);
-	Length = (A-NewVec).Length();
-	FVector AB = (B-A);
-	AB.Normalize();
-	Dir = AB;
-}
-
-float ASCharacter::GetStrafeDot(const float& SingleAngle)
-{
-	return (90.0f-SingleAngle)/90.0f;
 }
 
 
@@ -207,4 +154,3 @@ FVector ASCharacter::CursorHitLocation()
 	}
 	return HitResult.Location;
 }
-
