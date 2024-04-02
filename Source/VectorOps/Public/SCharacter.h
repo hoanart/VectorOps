@@ -47,6 +47,7 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Components",meta = (AllowPrivateAccess = true))
 	TObjectPtr<class UCameraComponent> CameraComp;
 
+
 	
 private:
 	//Input
@@ -60,7 +61,15 @@ private:
 	TObjectPtr<class UInputAction> LookAction;
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Input",meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> FireAction;
-	
+
+public:
+	UFUNCTION(BlueprintPure)
+	FVector2D GetMoveVector()
+	{
+		return MoveVector;
+	}
+	UPROPERTY(EditAnywhere,BlueprintGetter = "GetMoveVector",Category = "Input")
+	FVector2D MoveVector;
 private:
 	UPROPERTY(EditDefaultsOnly,Category="Animation")
 	TObjectPtr<class UAnimMontage> FireAnim;

@@ -81,7 +81,7 @@ FRotator ASCharacter::LookupTarget(const FVector& Target)
 void ASCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVec = Value.Get<FVector2D>();
-	
+	MoveVector = MovementVec;
 	if(IsValid(Controller))
 	{
 		const FRotator Rot =GetActorRotation();
@@ -89,7 +89,7 @@ void ASCharacter::Move(const FInputActionValue& Value)
 
 		const FVector ForwardDir = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
 		const FVector RightDir = FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y);
-
+		
 		AddMovementInput(ForwardDir,MovementVec.Y);
 		AddMovementInput(RightDir,MovementVec.X);
 	}
