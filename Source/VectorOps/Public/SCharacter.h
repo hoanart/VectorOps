@@ -64,12 +64,15 @@ private:
 
 public:
 	UFUNCTION(BlueprintPure)
-	FVector2D GetMoveVector()
+	FVector2D GetMovementVec()
 	{
-		return MoveVector;
+		return MovementVec;
 	}
-	UPROPERTY(EditAnywhere,BlueprintGetter = "GetMoveVector",Category = "Input")
-	FVector2D MoveVector;
+
+	UPROPERTY(EditAnywhere,BlueprintGetter = "GetMovementVec",Category = "Input")
+	FVector2D MovementVec;
+
+
 private:
 	UPROPERTY(EditDefaultsOnly,Category="Animation")
 	TObjectPtr<class UAnimMontage> FireAnim;

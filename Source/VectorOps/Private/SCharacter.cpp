@@ -53,8 +53,6 @@ void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	DebugLocationFace();
-	
-	
 }
 
 // Called to bind functionality to input
@@ -80,8 +78,8 @@ FRotator ASCharacter::LookupTarget(const FVector& Target)
 
 void ASCharacter::Move(const FInputActionValue& Value)
 {
-	FVector2D MovementVec = Value.Get<FVector2D>();
-	MoveVector = MovementVec;
+	 MovementVec = Value.Get<FVector2D>();
+	
 	if(IsValid(Controller))
 	{
 		const FRotator Rot =GetActorRotation();
